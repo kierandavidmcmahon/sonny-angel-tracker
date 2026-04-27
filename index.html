@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sonny Angel Collection Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #fdf8f8;
+      color: #1a1a1a;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #fff;
+      border-bottom: 1px solid #f0e0e6;
+      padding: 1.25rem 2rem;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      font-weight: 400;
+      color: #1a1a1a;
+    }
+
+    header .subtitle {
+      font-size: 13px;
+      color: #888;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+      margin-bottom: 1.75rem;
+    }
+
+    .stat {
+      background: #fff;
+      border: 1px solid #f0e0e6;
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 22px;
+      font-weight: 500;
+      color: #1a1a1a;
+    }
+
+    .stat-value.green { color: #1D9E75; }
+
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 1.25rem;
+    }
+
+    .search input {
+      width: 100%;
+      padding: 9px 14px;
+      font-size: 14px;
+      border-radius: 8px;
+      border: 1px solid #e8d5dc;
+      background: #fff;
+      color: #1a1a1a;
+      font-family: 'DM Sans', sans-serif;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .search input:focus { border-color: #D4537E; }
+
+    .filters {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      font-size: 12px;
+      padding: 5px 13px;
+      border-radius: 20px;
+      border: 1px solid #e8d5dc;
+      background: transparent;
+      cursor: pointer;
+      color: #888;
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.15s;
+    }
+
+    .filter-btn:hover { border-color: #D4537E; color: #D4537E; }
+
+    .filter-btn.active {
+      background: #D4537E;
+      color: #fff;
+      border-color: #D4537E;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+      gap: 12px;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #f0e0e6;
+      border-radius: 12px;
+      padding: 0.875rem;
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      position: relative;
+      user-select: none;
+    }
+
+    .card:hover { border-color: #D4537E; box-shadow: 0 2px 12px rgba(212,83,126,0.08); }
+    .card.owned { border-color: #1D9E75; }
+
+    .card-img {
+      width: 100%;
+      aspect-ratio: 1/1;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      font-size: 36px;
+    }
+
+    .card-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+
+    .card-name {
+      font-weight: 500;
+      font-size: 13px;
+      color: #1a1a1a;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-series { font-size: 11px; color: #999; margin-bottom: 6px; }
+
+    .card-footer { display: flex; justify-content: space-between; align-items: center; }
+
+    .card-price { font-size: 14px; font-weight: 500; color: #D4537E; }
+
+    .card-badge { font-size: 10px; padding: 2px 7px; border-radius: 10px; }
+    .badge-secret { background: #FAEEDA; color: #633806; }
+    .badge-standard { background: #FBEAF0; color: #993556; }
+
+    .year-tag { font-size: 10px; color: #bbb; margin-top: 4px; }
+
+    .owned-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      margin-top: 6px;
+      color: #1D9E75;
+    }
+
+    .owned-dot { width: 6px; height: 6px; border-radius: 50%; background: #1D9E75; }
+
+    .owned-tick {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 20px;
+      height: 20px;
+      background: #1D9E75;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 11px;
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 4rem;
+      color: #bbb;
+      font-size: 14px;
+      grid-column: 1 / -1;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 12px;
+      color: #ccc;
+      margin-top: 2rem;
+    }
+
+    @media (max-width: 600px) {
+      header { padding: 1rem; }
+      main { padding: 1rem; }
+      .cards-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Sonny Angel Collection</h1>
+  <span class="subtitle">126 figures &bull; Click a figure to mark as owned</span>
+</header>
+
+<main>
+  <div class="stats">
+    <div class="stat"><div class="stat-label">Total Figures</div><div class="stat-value">126</div></div>
+    <div class="stat"><div class="stat-label">In Collection</div><div class="stat-value" id="statOwned">0</div></div>
+    <div class="stat"><div class="stat-label">Collection Value</div><div class="stat-value green" id="statValue">£0</div></div>
+    <div class="stat"><div class="stat-label">Series</div><div class="stat-value">9</div></div>
+  </div>
+
+  <div class="controls">
+    <div class="search">
+      <input type="text" id="searchInput" placeholder="Search by name or series..." oninput="filterCards()" />
+    </div>
+    <div class="filters" id="filterRow"></div>
+  </div>
+
+  <div class="cards-grid" id="cardsGrid"></div>
+</main>
+
+<footer>Sonny Angel Collection Tracker</footer>
+
+<script>
+  const figures = [
+    {s:"Animal V1",n:"Rabbit",sec:false,yr:"2018",p:30,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_rabbit_01-1.jpg"},
+    {s:"Animal V1",n:"Elephant",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_elephant_01-1.jpg"},
+    {s:"Animal V1",n:"Cockerel",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_cockerel_01-1.jpg"},
+    {s:"Animal V1",n:"Dalmation",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_dalmatian_01-1.jpg"},
+    {s:"Animal V1",n:"Frog",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_frog_01-1.jpg"},
+    {s:"Animal V1",n:"Koala",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_koala_01-1.jpg"},
+    {s:"Animal V1",n:"Panda",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_panda_01-1.jpg"},
+    {s:"Animal V1",n:"Sloth",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_sloth_01-1.jpg"},
+    {s:"Animal V1",n:"Tiger",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_tiger_01-1.jpg"},
+    {s:"Animal V1",n:"White Bear",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_whitebear_01-1.jpg"},
+    {s:"Animal V1",n:"Monkey",sec:false,yr:"2018",p:20,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_monkey_01-1.jpg"},
+    {s:"Animal V1",n:"Owl",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_owl_01-1.jpg"},
+    {s:"Animal V1",n:"Chipmunk",sec:true,yr:"2018",p:100,img:null},
+    {s:"Animal V1",n:"Robby",sec:true,yr:"2018",p:50,img:null},
+    {s:"Animal V2",n:"Mouse",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_mouse_01-1.jpg"},
+    {s:"Animal V2",n:"Lesser Panda",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_lesserpanda_01-1.jpg"},
+    {s:"Animal V2",n:"Chameleon",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_cameleon_01-1.jpg"},
+    {s:"Animal V2",n:"Uribou",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_uribou_01-1.jpg"},
+    {s:"Animal V2",n:"Skunk",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_skunk_01-1.jpg"},
+    {s:"Animal V2",n:"Sheep",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_sheep_01-1.jpg"},
+    {s:"Animal V2",n:"Hedgehog",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_hedghog_01-1.jpg"},
+    {s:"Animal V2",n:"Fawn",sec:false,yr:"2018",p:30,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_fawn_01-1.jpg"},
+    {s:"Animal V2",n:"Duck",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_duck_01-1.jpg"},
+    {s:"Animal V2",n:"Cow",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_cow_01-1.jpg"},
+    {s:"Animal V2",n:"Reindeer",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_reindeer_01-1.jpg"},
+    {s:"Animal V2",n:"Pig",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_pig_01-1.jpg"},
+    {s:"Animal V2",n:"Kappa",sec:true,yr:"2018",p:100,img:null},
+    {s:"Animal V2",n:"Robby",sec:true,yr:"2018",p:50,img:null},
+    {s:"Animal V3",n:"Parrot",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_parrot_01-1.jpg"},
+    {s:"Animal V3",n:"Rhinoceros",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_rhinoceros_01-1.jpg"},
+    {s:"Animal V3",n:"Chihuahua",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_chihuahua_01-1.jpg"},
+    {s:"Animal V3",n:"Crocodile",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_crocodile_01-1.jpg"},
+    {s:"Animal V3",n:"French Bulldog",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_frenchbulldog_01-1.jpg"},
+    {s:"Animal V3",n:"Giraffe",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_giraffe_01-1.jpg"},
+    {s:"Animal V3",n:"Snake",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_snake_01-1.jpg"},
+    {s:"Animal V3",n:"Toy Poodle",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_toypoodle_01-1.jpg"},
+    {s:"Animal V3",n:"Zebra",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_zebra_01-1.jpg"},
+    {s:"Animal V3",n:"American Shorthair",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_americanshorthair_01-1.jpg"},
+    {s:"Animal V3",n:"Lop Ear Rabbit",sec:false,yr:"2018",p:30,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_lopearrabbit_01-1.jpg"},
+    {s:"Animal V3",n:"Macaw",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_macaw_01-1.jpg"},
+    {s:"Animal V3",n:"Unicorn",sec:true,yr:"2018",p:100,img:null},
+    {s:"Animal V3",n:"Robby",sec:true,yr:"2018",p:50,img:null},
+    {s:"Animal V4",n:"Hippopotamus",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_hippopotamus_01-1.jpg"},
+    {s:"Animal V4",n:"Horse",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_horse_01-1.jpg"},
+    {s:"Animal V4",n:"Anteater",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_anteater_01-1.jpg"},
+    {s:"Animal V4",n:"Buffalo",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_buffalo_01-1.jpg"},
+    {s:"Animal V4",n:"Calico Cat",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_calicocat_01-1.jpg"},
+    {s:"Animal V4",n:"Cheeta",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_cheetah_01-1.jpg"},
+    {s:"Animal V4",n:"Lion",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_lion_01-1.jpg"},
+    {s:"Animal V4",n:"Peacock",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_peacock_01-1.jpg"},
+    {s:"Animal V4",n:"Shiba Inu",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_shibainu_01-1.jpg"},
+    {s:"Animal V4",n:"Alpaca",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_alpaca_01-1.jpg"},
+    {s:"Animal V4",n:"Goat",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_goat_01-1.jpg"},
+    {s:"Animal V4",n:"Gorilla",sec:false,yr:"2018",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/new_gorilla_01-1.jpg"},
+    {s:"Animal V4",n:"Dragon",sec:true,yr:"2018",p:100,img:null},
+    {s:"Animal V4",n:"Robby",sec:true,yr:"2018",p:50,img:null},
+    {s:"Marine",n:"Shark",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/08/Shark.png"},
+    {s:"Marine",n:"Jellyfish",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/08/Jellyfish.png"},
+    {s:"Marine",n:"Clownfish",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/08/Clownfish.png"},
+    {s:"Marine",n:"Shell",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/08/Shell.png"},
+    {s:"Marine",n:"Penguin",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/08/Penguin.png"},
+    {s:"Marine",n:"Manta",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/08/Manta.png"},
+    {s:"Marine",n:"Dolphin",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/08/Dolphin.png"},
+    {s:"Marine",n:"Seal",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/08/Seal.png"},
+    {s:"Marine",n:"Seahorse",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/08/Seahorse.png"},
+    {s:"Marine",n:"Whale",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/08/Whale.png"},
+    {s:"Marine",n:"Blowfish",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/08/Blowfish.png"},
+    {s:"Marine",n:"Starfish",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/08/Starfish.png"},
+    {s:"Marine",n:"Turtle",sec:true,yr:"2019",p:100,img:null},
+    {s:"Marine",n:"Robby",sec:true,yr:"2019",p:50,img:null},
+    {s:"Fruit",n:"Raspberry",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/08/Raspberry.png"},
+    {s:"Fruit",n:"Peach",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/08/Peach.png"},
+    {s:"Fruit",n:"Watermelon",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/08/Watermelon.png"},
+    {s:"Fruit",n:"Melon",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/08/Melon.png"},
+    {s:"Fruit",n:"Durian",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/08/Durian.png"},
+    {s:"Fruit",n:"Dragon Fruit",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/08/DragonFruit.png"},
+    {s:"Fruit",n:"Orange",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/08/Orange.png"},
+    {s:"Fruit",n:"Pear",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/08/Pear.png"},
+    {s:"Fruit",n:"Strawberry",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/08/Strawberry.png"},
+    {s:"Fruit",n:"Grape",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/08/Grape.png"},
+    {s:"Fruit",n:"Pineapple",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/08/Pineapple.png"},
+    {s:"Fruit",n:"Apple",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/08/Apple.png"},
+    {s:"Fruit",n:"Seed Leaf",sec:true,yr:"2019",p:100,img:null},
+    {s:"Fruit",n:"Robby",sec:true,yr:"2019",p:50,img:null},
+    {s:"Flower",n:"Rose",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/10/Rose.png"},
+    {s:"Flower",n:"Cherry Blossom",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/10/CherryBlossom.png"},
+    {s:"Flower",n:"Lily Bell",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/10/LilyBell.png"},
+    {s:"Flower",n:"Hydrangea",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/10/Hybrangea.png"},
+    {s:"Flower",n:"Pansy",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/10/Pansy.png"},
+    {s:"Flower",n:"Carnation",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/10/Carnarion.png"},
+    {s:"Flower",n:"Poppy",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/10/Poppy.png"},
+    {s:"Flower",n:"Sunflower",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/10/Sunflower.png"},
+    {s:"Flower",n:"Cactus",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/10/Cactus.png"},
+    {s:"Flower",n:"Morning Glory",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/10/MorningGlory.png"},
+    {s:"Flower",n:"Acorn",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/10/Acorn.png"},
+    {s:"Flower",n:"Tulip",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/10/Tulip.png"},
+    {s:"Flower",n:"Bee",sec:true,yr:"2019",p:100,img:null},
+    {s:"Flower",n:"Robby",sec:true,yr:"2019",p:50,img:null},
+    {s:"Vegetable",n:"Carrot",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/10/Carrot.png"},
+    {s:"Vegetable",n:"Tomato",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/10/Tomato.png"},
+    {s:"Vegetable",n:"Green Pepper",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/10/GreenPepper.png"},
+    {s:"Vegetable",n:"Eggplant",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/10/Eggplant.png"},
+    {s:"Vegetable",n:"Bok Choy",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/10/BokChoy.png"},
+    {s:"Vegetable",n:"Corn",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/10/Corn.png"},
+    {s:"Vegetable",n:"Garlic",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/10/Garlic.png"},
+    {s:"Vegetable",n:"Zucchini",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/10/Zucchini.png"},
+    {s:"Vegetable",n:"Onion",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/10/Onion.png"},
+    {s:"Vegetable",n:"Radish",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/10/Radish.png"},
+    {s:"Vegetable",n:"Cauliflower",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/10/Cauliflower.png"},
+    {s:"Vegetable",n:"Cabbage",sec:false,yr:"2019",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2019/10/Cabbage.png"},
+    {s:"Vegetable",n:"Shiitake",sec:true,yr:"2019",p:100,img:null},
+    {s:"Vegetable",n:"Robby",sec:true,yr:"2019",p:50,img:null},
+    {s:"Sweets",n:"Cream Puff",sec:false,yr:"2017",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/SA_creampuff_01.jpg"},
+    {s:"Sweets",n:"Cupcake",sec:false,yr:"2017",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/SA_cupcake_01.jpg"},
+    {s:"Sweets",n:"Pancake",sec:false,yr:"2017",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/SA_pancake_01.jpg"},
+    {s:"Sweets",n:"Popcorn",sec:false,yr:"2017",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/SA_popcorn_01.jpg"},
+    {s:"Sweets",n:"Pudding",sec:false,yr:"2017",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/SA_pudding_01.jpg"},
+    {s:"Sweets",n:"Candy",sec:false,yr:"2017",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/SA_candy_01.jpg"},
+    {s:"Sweets",n:"Fruit Tart",sec:false,yr:"2017",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/SA_fruittart_01.jpg"},
+    {s:"Sweets",n:"Ice Creams",sec:false,yr:"2017",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/SA_icecreams_01.jpg"},
+    {s:"Sweets",n:"Jelly Beans",sec:false,yr:"2017",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/SA_jellybeans_01.jpg"},
+    {s:"Sweets",n:"Konpeito",sec:false,yr:"2017",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/SA_konpeito_01.jpg"},
+    {s:"Sweets",n:"Cookie",sec:false,yr:"2017",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/SA_cookie_01.jpg"},
+    {s:"Sweets",n:"Strawberry Shortcake",sec:false,yr:"2017",p:15,img:"https://www.sonnyangel.com/renewal/wp-content/uploads/2018/10/SA_strawberryshortcake_01.jpg"},
+    {s:"Sweets",n:"Patissier",sec:true,yr:"2017",p:100,img:null},
+    {s:"Sweets",n:"Robby",sec:true,yr:"2017",p:50,img:null},
+  ].map((f, i) => ({...f, idx: i}));
+
+  const seriesEmoji = {
+    "Animal V1":"🐰","Animal V2":"🐭","Animal V3":"🦜","Animal V4":"🦁",
+    "Marine":"🐠","Fruit":"🍓","Flower":"🌸","Vegetable":"🥕","Sweets":"🍰"
+  };
+
+  const allSeries = [...new Set(figures.map(f => f.s))];
+  let ownedSet = new Set();
+  let activeFilter = 'All';
+
+  // Build filter buttons
+  const filterRow = document.getElementById('filterRow');
+  ['All', 'Owned', 'Wanted', 'Secret', ...allSeries].forEach((f, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn' + (i === 0 ? ' active' : '');
+    btn.textContent = f;
+    btn.onclick = function() { setFilter(f, btn); };
+    filterRow.appendChild(btn);
+  });
+
+  function updateStats() {
+    const val = figures.filter(f => ownedSet.has(f.idx)).reduce((sum, f) => sum + f.p, 0);
+    document.getElementById('statOwned').textContent = ownedSet.size;
+    document.getElementById('statValue').textContent = '£' + val.toLocaleString();
+  }
+
+  function setFilter(filter, btn) {
+    activeFilter = filter;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filterCards();
+  }
+
+  function toggleOwned(idx) {
+    if (ownedSet.has(idx)) ownedSet.delete(idx);
+    else ownedSet.add(idx);
+    updateStats();
+    filterCards();
+  }
+
+  function filterCards() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const filtered = figures.filter(f => {
+      const ms = f.n.toLowerCase().includes(q) || f.s.toLowerCase().includes(q);
+      const mf =
+        activeFilter === 'All' ? true :
+        activeFilter === 'Owned' ? ownedSet.has(f.idx) :
+        activeFilter === 'Wanted' ? !ownedSet.has(f.idx) :
+        activeFilter === 'Secret' ? f.sec :
+        f.s === activeFilter;
+      return ms && mf;
+    });
+
+    const grid = document.getElementById('cardsGrid');
+    if (!filtered.length) {
+      grid.innerHTML = '<div class="no-results">No figures found</div>';
+      return;
+    }
+
+    grid.innerHTML = filtered.map(f => {
+      const isOwned = ownedSet.has(f.idx);
+      const bg = f.sec ? '#FAEEDA' : '#FBEAF0';
+      const imgHtml = f.img
+        ? `<img src="${f.img}" alt="${f.n}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" /><span style="display:none;font-size:36px;width:100%;height:100%;align-items:center;justify-content:center;background:${bg};border-radius:8px">${seriesEmoji[f.s]||'🎀'}</span>`
+        : `<span style="font-size:36px;width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:${bg};border-radius:8px">${seriesEmoji[f.s]||'🎀'}</span>`;
+
+      return `
+        <div class="card${isOwned ? ' owned' : ''}" onclick="toggleOwned(${f.idx})">
+          ${isOwned ? '<div class="owned-tick">✓</div>' : ''}
+          <div class="card-img" style="background:${bg}">${imgHtml}</div>
+          <div class="card-name" title="${f.n}">${f.n}</div>
+          <div class="card-series">${f.s}</div>
+          <div class="card-footer">
+            <span class="card-price">£${f.p}</span>
+            <span class="card-badge ${f.sec ? 'badge-secret' : 'badge-standard'}">${f.sec ? 'Secret' : 'Standard'}</span>
+          </div>
+          <div class="year-tag">${f.yr}</div>
+          ${isOwned ? '<div class="owned-badge"><span class="owned-dot"></span> In collection</div>' : ''}
+        </div>`;
+    }).join('');
+  }
+
+  filterCards();
+</script>
+
+</body>
+</html>
